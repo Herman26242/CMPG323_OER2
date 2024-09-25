@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Algo_Rhythoms.Data;
+﻿using Algo_Rhythoms.Data;
+using Microsoft.EntityFrameworkCore;
 
 public class ApplicationDbContext : DbContext
 {
@@ -9,34 +9,59 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<User> User { get; set; }
+    public DbSet<UserCredential> UserCredentials { get; set; }
+    public DbSet<FAQ> FAQ { get; set; }
+    public DbSet<SDL> SDL { get; set; }
+    public DbSet<OERWebsite> OERWebsites { get; set; }
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // Define the primary key for User
+        // User configuration
         modelBuilder.Entity<User>()
-            .HasKey(u => u.UserID); // Primary key
+            .HasKey(u => u.UserID);
 
-        // Ensure UserID is an identity column in the database schema
         modelBuilder.Entity<User>()
             .Property(u => u.UserID)
-            .ValueGeneratedOnAdd(); // Indicates that UserID is auto-incremented
+            .ValueGeneratedOnAdd();
 
-        //  modelBuilder.Entity<User>()
-        //      .HasMany(u => u.UploadedFiles)
-        //      .WithOne(f => f.User)
-        //      .HasForeignKey(f => f.UserID);
+        // UserCredential configuration
+        modelBuilder.Entity<UserCredential>()
+            .HasKey(uc => uc.CredentialID); // Set the primary key
 
-        //  modelBuilder.Entity<User>()
-        //      .HasMany(u => u.FileModerations)
-        //      .WithOne(fm => fm.Moderator)
-        //      .HasForeignKey(fm => fm.ModeratorID);
+        modelBuilder.Entity<UserCredential>()
+            .HasOne(uc => uc.User)
+            .WithMany(u => u.UserCredentials)
+            .HasForeignKey(uc => uc.UserID)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        //  modelBuilder.Entity<User>()
-        //    .HasMany(u => u.Ratings)
-        //    .WithOne(r => r.User)
-        //    .HasForeignKey(r => r.UserID);
+        modelBuilder.Entity<FAQ>()
+            .Property(f => f.Answer)
+            .IsRequired()
+            .HasMaxLength(1000); // Set answer to be required with a max length
 
-           }
+        modelBuilder.Entity<FAQ>()
+            .HasOne<User>() // Configure CreatedBy relationship
+            .WithMany() // Assuming a User can create many FAQs
+            .HasForeignKey(f => f.CreatedBy)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete for created user
+
+        modelBuilder.Entity<FAQ>()
+            .HasOne<User>() // Configure UpdatedBy relationship
+            .WithMany() // Assuming a User can update many FAQs
+            .HasForeignKey(f => f.UpdatedBy)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete for updated user
+
+        // Configure the primary key for SelfDirectedLearningResource
+        modelBuilder.Entity<SDL>()
+            .HasKey(r => r.ID);
+
+        // Configure the primary key for OERWebsite
+        modelBuilder.Entity<OERWebsite>()
+            .HasKey(o => o.ID);
+
+    }
 }

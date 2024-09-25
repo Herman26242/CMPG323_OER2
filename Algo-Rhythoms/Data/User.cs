@@ -1,4 +1,7 @@
-﻿namespace Algo_Rhythoms.Data
+﻿using System;
+using System.Collections.Generic;
+
+namespace Algo_Rhythoms.Data
 {
     public class User
     {
@@ -10,5 +13,8 @@
         public string AccountType { get; set; }
         public string? Affiliation { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow; // Default to current UTC time
+
+        // Navigation property to related UserCredentials
+        public virtual ICollection<UserCredential> UserCredentials { get; set; } = new List<UserCredential>();
     }
 }
